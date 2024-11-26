@@ -1,12 +1,25 @@
 import {useNavigate} from 'react-router-dom';
+import {useDispatch} from "react-redux";
+import { useCreatPlayGround } from '../../hooks/playGround.hooks';
+import { setPlayGrountHost } from '../../store/slices/playgroundSlice';
 
 const HomePage = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const {mutateAsync : createPlayGround} = useCreatPlayGround();
 
-    const handleClick = (e) => {
+    const handleClick = async (e) => {
         e.preventDefault();
 
-        navigate('/playground');
+        const {data} = await createPlayGround({image: 'reactbaseapp'});
+        console.log('Data:', data);
+        dispatch(setPlayGrountHost({
+                playGroundHost: `http://localhost:${data.port}/`
+            })
+        );
+        setTimeout(() => {
+            navigate('/playground');
+          }, 300);
     }
 
     return (

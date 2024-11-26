@@ -1,14 +1,17 @@
 import { Terminal as XTerminal } from "@xterm/xterm";
 import { useEffect, useRef } from "react";
-import socket from "../../../utils/socket";
+import PropTypes from 'prop-types';
+
 
 import "@xterm/xterm/css/xterm.css";
 
-const Terminal = () => {
+const Terminal = ({socket}) => {
+
   const terminalRef = useRef();
   const isRendered = useRef(false);
 
   useEffect(() => {
+    if (!socket) return;
     if (isRendered.current) return;
     isRendered.current = true;
 
@@ -17,26 +20,6 @@ const Terminal = () => {
       fontSize: 14, // Adjust font size as needed
       fontFamily: 'Courier New, monospace', // Set font family
       theme: {
-        background: '#1e1e1e', // Dark background color
-        foreground: '#d4d4d4', // Light gray font color
-        cursor: '#d4d4d4', // Cursor color
-        selection: '#264f78', // Selection background color
-        black: '#000000',
-        red: '#cd3131',
-        green: '#0dbc79',
-        yellow: '#e5e510',
-        blue: '#2472c8',
-        magenta: '#bc3fbc',
-        cyan: '#11a8cd',
-        white: '#e5e5e5',
-        brightBlack: '#666666',
-        brightRed: '#f14c4c',
-        brightGreen: '#23d18b',
-        brightYellow: '#f5f543',
-        brightBlue: '#3b8eea',
-        brightMagenta: '#d670d6',
-        brightCyan: '#29b8db',
-        brightWhite: '#e5e5e5',
       }
     });
 
@@ -55,11 +38,14 @@ const Terminal = () => {
       term.write(data);
       term.scrollToBottom();
     });
-
+    //comment
     socket.emit('oneTime','data');
   }, []);
 
   return <div ref={terminalRef} id="terminal"/>;
+};
+Terminal.propTypes = {
+  socket: PropTypes.object,
 };
 
 export default Terminal;

@@ -2,18 +2,20 @@ import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import Editor from '@monaco-editor/react';
 import { getFileMode } from '../../../utils/getFileMode';
-import socket from '../../../utils/socket';
+import { useSelector } from 'react-redux';
 
-const EditorComponent = ({ selectedFile }) => {
+const EditorComponent = ({ selectedFile, socket }) => {
+    const plaground = useSelector((state) => state.playground);
     const [content, setContent] = useState('// Select a file to view its content');
     const [language, setLanguage] = useState('');
 
     const autosaveTimer = useRef(null);
 
     useEffect(() => {
+        if (!socket) return;
         if (selectedFile) {
             // Fetch file content when a file is selected
-            fetch(`http://localhost:1000/files/content?path=${encodeURIComponent(selectedFile)}`)
+            fetch(`${plaground.playGroundHost}files/content?path=${encodeURIComponent(selectedFile)}`)
                 .then(res => res.json())
                 .then(data => setContent(data.content))
                 .catch(err => console.error('Error fetching file content:', err));
@@ -57,7 +59,8 @@ const EditorComponent = ({ selectedFile }) => {
 };
 
 EditorComponent.propTypes = {
-    selectedFile: PropTypes.string
+    selectedFile: PropTypes.string,
+    socket: PropTypes.object,
 };
 
 export default EditorComponent;

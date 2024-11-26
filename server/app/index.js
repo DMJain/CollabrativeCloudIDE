@@ -17,7 +17,7 @@ let availablePorts = 9000;
 app.post("/playground/create", async (req, res) => {
   const {image} = req.body;
   try{
-    await docker.pull(image);
+    // await docker.pull(image);
     await new Promise(resolve => setTimeout(resolve, 500));
     const container = await docker.createContainer({
       Image: image,
@@ -33,7 +33,7 @@ app.post("/playground/create", async (req, res) => {
     });
     availablePorts++;
     await container.start();
-    res.status(201).json({success : true, port: availablePorts-1, message : 'Container created successfully', containerId: container.id});
+    res.status(201).json({success : true, data : {port: availablePorts-1, message : 'Container created successfully', containerId: container.id}});
   } catch (error) {
     console.error('Error creating container:', error);
     res.status(500).send('Internal Server Error');

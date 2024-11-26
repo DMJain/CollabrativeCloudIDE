@@ -9,11 +9,12 @@
 
     const pty = require('node-pty')
 
-    const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
+    const shell = os.platform() === 'win32' ? 'powershell.exe' : 'sh';
 
-    const initialCwd = '../ReactApp';
+    //file location in the container
+    const initialCwd = '../../app';
 
-    const ptyProcess = pty.spawn(shell, [], {
+    const ptyProcess = pty.spawn('sh', [], {
         name: 'xterm-color',
         cols: 80,
         rows: 30,
@@ -24,10 +25,16 @@
     const app = express()
     const server = http.createServer(app);
     const io = new SocketServer({
-        cors: '*'
+        cors: {
+            origin: "*" // Replace with your frontend URL
+        },
     })
 
-    app.use(cors())
+    app.use(cors());
+    app.use((req, res, next) => {
+        console.log(`Incoming request: ${req.method} ${req.url}`);
+        next();
+      });
 
     io.attach(server);
 
@@ -48,18 +55,36 @@
             ptyProcess.write(data);
         })
 
-        
         socket.on('oneTime', (data) => {
             ptyProcess.write('\r');
         })
         
         socket.emit('file:refresh')
+
+        socket.on('disconnect', () => {
+            console.log(`A user disconnected ${socket.id}`);
+          });
     })
 
-    ptyProcess.onData(data => {
-        console.log("sending",data)
-        io.emit('terminal:data', data)
-    })
+    function stripAnsi(data) {
+        // Regular expression to match ANSI escape sequences
+        const ansiRegex = /\x1b\[[0-9;]*m/g;
+        return data.replace(ansiRegex, '');
+    }
+    
+    ptyProcess.onData((data) => {
+        const cleanData = stripAnsi(data).trim();
+    
+        const portMatch = cleanData.match(/http:\/\/localhost:(\d+)/);
+        if (portMatch) {
+            const vitePort = parseInt(portMatch[1], 10);
+            console.log(`Detected Vite app port: ${vitePort}`);
+            
+        }
+    
+        console.log("Cleaned terminal data:", cleanData);
+        io.emit('terminal:data', data);
+    });
 
     app.get('/files', async (req, res) => {
         const fileTree = await generateFileTree(`${initialCwd}`);

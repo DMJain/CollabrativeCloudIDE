@@ -5,7 +5,7 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const PORT = process.env.PORT ?? 8000;
+const PORT = process.env.PORT ?? 1001;
 
 async function init() {
   try {
