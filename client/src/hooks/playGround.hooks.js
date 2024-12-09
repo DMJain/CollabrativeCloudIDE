@@ -18,3 +18,21 @@ export const useCreatPlayGround = () => {
     });
     return mutation;
   };
+
+  export const useDeletePlayGround = () => {
+    const queryClient = useQueryClient();
+  
+    const mutation = useMutation({
+      mutationFn: async ({containerId}) => {
+        const { data } = await apiInstance.post("/playground/delete", {
+            containerId : `${containerId}`
+        });
+
+        return data;
+      },
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: ["playGround"] });
+      },
+    });
+    return mutation;
+  };

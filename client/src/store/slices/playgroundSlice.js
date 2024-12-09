@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
   playGroundHost: "",
+  playGroundID: "",
 }
 
 export const playGroundSlice = createSlice({
@@ -10,6 +11,7 @@ export const playGroundSlice = createSlice({
   reducers: {
     setPlayGrountHost: (state, action) => {
       state.playGroundHost = action.payload.playGroundHost;
+      state.playGroundID = action.payload.playGroundID;
     },
   },
 })

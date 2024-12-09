@@ -18,4 +18,5 @@ COPY runner/ .
 
 # Expose port and set the command
 EXPOSE 1000
+EXPOSE 3000
 CMD ["npm", "run", "dev"]

@@ -63,26 +63,11 @@
 
         socket.on('disconnect', () => {
             console.log(`A user disconnected ${socket.id}`);
-          });
+            
+        });
     })
-
-    function stripAnsi(data) {
-        // Regular expression to match ANSI escape sequences
-        const ansiRegex = /\x1b\[[0-9;]*m/g;
-        return data.replace(ansiRegex, '');
-    }
     
     ptyProcess.onData((data) => {
-        const cleanData = stripAnsi(data).trim();
-    
-        const portMatch = cleanData.match(/http:\/\/localhost:(\d+)/);
-        if (portMatch) {
-            const vitePort = parseInt(portMatch[1], 10);
-            console.log(`Detected Vite app port: ${vitePort}`);
-            
-        }
-    
-        console.log("Cleaned terminal data:", cleanData);
         io.emit('terminal:data', data);
     });
 

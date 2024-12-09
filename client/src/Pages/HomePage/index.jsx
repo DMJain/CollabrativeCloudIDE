@@ -14,7 +14,8 @@ const HomePage = () => {
         const {data} = await createPlayGround({image: 'reactbaseapp'});
         console.log('Data:', data);
         dispatch(setPlayGrountHost({
-                playGroundHost: `http://localhost:${data.port}/`
+                playGroundHost: `http://localhost:${data.port}/`,
+                playGroundID: data.containerId
             })
         );
         setTimeout(() => {

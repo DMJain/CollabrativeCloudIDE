@@ -27,8 +27,15 @@ app.post("/playground/create", async (req, res) => {
         PortBindings: {
           '1000/tcp': [{
               HostPort: availablePorts.toString()
-            }]
-        }
+            }],
+          '3000/tcp': [{
+              HostPort: '3000'
+          }]
+        },
+        ExposedPorts: {
+          '1000/tcp': {}, // Declare the port exposed for the container
+          '3000/tcp': {}, // Prepare the container to expose this port in the future
+        },
       }
     });
     availablePorts++;
@@ -39,5 +46,24 @@ app.post("/playground/create", async (req, res) => {
     res.status(500).send('Internal Server Error');
  }
 })
+
+app.post("/playground/delete", async (req, res) => {
+  const { containerId} = req.body;
+  console.log("Container ID:", containerId);
+  try {
+    const container = docker.getContainer(containerId);
+    await container.stop();
+    await container.remove();
+    console.log("Container deleted:", containerId);
+
+    res.status(203).json({
+        success: true,
+        data: { message: "Container deleted" },
+    });
+} catch (error) {
+    console.error(`Error not deleted deleted:`, error);
+    res.status(500).send("Internal Server Error");
+}
+});
 
 module.exports = app;
