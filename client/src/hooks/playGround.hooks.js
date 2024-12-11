@@ -7,7 +7,9 @@ export const useCreatPlayGround = () => {
     const mutation = useMutation({
       mutationFn: async ({image}) => {
         const { data } = await apiInstance.post("/playground/create", {
-            image
+            image,
+            "userId" : "1234",
+            "projectId" : "12"
         });
 
         return data;

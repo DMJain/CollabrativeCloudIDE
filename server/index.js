@@ -9,8 +9,8 @@ const PORT = process.env.PORT ?? 1001;
 
 async function init() {
   try {
-    // await connectDB(process.env.MONGODB_URI);
-    // console.log(`Mongodb Connected`);
+    await connectDB(process.env.MONGODB_URI);
+    console.log(`Mongodb Connected`);
 
     const server = http.createServer(expressApplication);
     server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
