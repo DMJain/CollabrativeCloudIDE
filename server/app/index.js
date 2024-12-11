@@ -59,9 +59,7 @@ app.post("/playground/create", async (req, res) => {
     fs.mkdirSync(projectDir, { recursive: true });
 
     // Copy initial setup files to the project directory
-    copyDir(initialSetupDir, projectDir); 
-
-    // ... (Docker container creation logic) ...
+    copyDir(initialSetupDir, projectDir);
 
     const container = await docker.createContainer({
       Image: image,
