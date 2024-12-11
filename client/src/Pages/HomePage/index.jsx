@@ -25,9 +25,21 @@ const HomePage = () => {
 
     return (
         <div>
-            <h1>Home Page</h1>
-            <button onClick={handleClick}>Go to Playground</button>
+            <div className='flex justify-center items-center h-screen'>
+            <div className='h-96 border p-4 rounded-lg w-72'>
+                <div className='flex justify-between'>
+                    <select className='select w-full '> 
+                        <option value='reactbaseapp'>React Base App</option>
+                    </select>
+                    <button className='btn' onClick={handleClick}>Create</button>
+                </div>
+                <div className=']'>
+
+                </div>
+            </div>
         </div>
+        </div>
+        
     );
 }
 
