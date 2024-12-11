@@ -1,0 +1,52 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+}
+
+.main-Container {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    height: 300px;
+    border: 1px solid black;
+    padding: 10px;
+}
+
+.create-container{
+    display: flex;
+    padding: 10px;
+    background-color:aqua;
+    font-size: large;
+    width: 100%;
+}
+
+.create-select select{
+    border: none;
+    padding: 8px;
+    width: 100%;
+}
+
+.create-select select{
+    border: none;
+    padding: 8px;
+    width: 100%;
+}
+
+.create-button button{
+    border: none;
+    padding: 8px;
+    border-radius: 5px;
+}
+
+.create-button button:hover{
+    background-color: #969696;
+    cursor: pointer;
+}
+
+.project-container{
+
+}
