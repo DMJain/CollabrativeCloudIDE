@@ -1,4 +1,7 @@
 const JWT = require("jsonwebtoken");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 const { randomBytesGenerator, hash } = require("../lib/utils/encrypt");
 const User = require("../models/user.model");

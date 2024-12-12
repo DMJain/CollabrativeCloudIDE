@@ -52,7 +52,9 @@ async function signIn(req, res) {
 }
 
 async function CurrentUser(req, res) {
-    if (!req.user) return res.json({ isLoggedIn: false });
+    if (!req.user) {
+        return res.json({ isLoggedIn: false })
+    };
 
     const user = await User.findById(req.user._id).select({
         _id: true,

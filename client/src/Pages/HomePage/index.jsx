@@ -1,12 +1,24 @@
 import {useNavigate} from 'react-router-dom';
 import {useDispatch} from "react-redux";
-import { useCreatPlayGround } from '../../hooks/playGround.hooks';
+import { useCreatPlayGround, useGetAllPlayGround } from '../../hooks/playGround.hooks';
 import { setPlayGrountHost } from '../../store/slices/playgroundSlice';
+import { useLoggedInUser} from '../../hooks/auth.hooks';
+import { useEffect } from 'react';
 
 const HomePage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const {mutateAsync : createPlayGround} = useCreatPlayGround();
+    const { data: user, isLoading } = useLoggedInUser();
+    const {data : projects} = useGetAllPlayGround();
+
+    useEffect(() => {
+        if(!user && isLoading){
+            navigate('/sign-in');
+        }
+    }, [])
+
+    console.log(projects)
 
     const handleClick = async (e) => {
         e.preventDefault();

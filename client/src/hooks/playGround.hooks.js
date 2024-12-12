@@ -1,5 +1,5 @@
 import { apiInstance } from '../api/index';
-import { useMutation, useQueryClient} from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery} from '@tanstack/react-query';
 
 export const useCreatPlayGround = () => {
     const queryClient = useQueryClient();
@@ -20,6 +20,26 @@ export const useCreatPlayGround = () => {
     });
     return mutation;
   };
+
+  export const useGetAllPlayGround = () => {
+    return useQuery({
+      queryKey: ['playGround'],
+      queryFn: async () => {
+          try {
+              const { data } = await apiInstance.get('/playground/list');
+              if (data.status === 'success') {
+                  return data.data || []; // Ensure a default empty array if `user` is undefined
+              } else {
+                  console.warn('Failed to fetch PGs:', data.message);
+                  return []; // Return an empty array on failure
+              }
+          } catch (error) {
+              console.error('Error fetching PGs:', error); // Handle errors
+              return []; // Return an empty array on error
+          }
+      },
+  });
+  }
 
   export const useDeletePlayGround = () => {
     const queryClient = useQueryClient();

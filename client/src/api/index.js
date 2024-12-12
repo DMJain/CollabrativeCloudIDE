@@ -5,10 +5,11 @@ export const apiInstance = axios.create({
   responseType: "json",
 });
 
-// apiInstance.interceptors.request.use((reqPayload) => {
-//   const token = localStorage.getItem("token");
-//   if (token) {
-//     reqPayload.headers.Authorization = `Bearer ${token}`;
-//   }
-//   return reqPayload;
-// });
+apiInstance.interceptors.request.use((reqPayload) => {
+  const token = localStorage.getItem("token");
+  console.log("Token:", token);
+  if (token) {
+    reqPayload.headers.Authorization = `Bearer ${token}`;
+  }
+  return reqPayload;
+});
