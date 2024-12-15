@@ -3,12 +3,13 @@ const Playground = require("../models/playground.model");
 class PlaygroundService {
   
     static async create(data) {
-      const { user, name } = data;
+      const { user, name, image } = data;
   
       try {
         const playground = await Playground.create({
           name,
           user,
+          image,
         });
         return playground;
       } catch (err) {

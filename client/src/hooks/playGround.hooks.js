@@ -21,6 +21,24 @@ export const useCreatPlayGround = () => {
     return mutation;
   };
 
+  export const useGetPlayGround = () => {
+    const queryClient = useQueryClient();
+  
+    const mutation = useMutation({
+      mutationFn: async ({id}) => {
+        const { data } = await apiInstance.post(`/playground/${id}`, {
+            projectID : `${id}`
+        });
+
+        return data;
+      },
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: ["playGround"] });
+      },
+    });
+    return mutation;
+}
+
   export const useGetAllPlayGround = () => {
     return useQuery({
       queryKey: ['playGround'],
@@ -30,11 +48,11 @@ export const useCreatPlayGround = () => {
               if (data.status === 'success') {
                   return data.data || []; // Ensure a default empty array if `user` is undefined
               } else {
-                  console.warn('Failed to fetch PGs:', data.message);
+                  console.warn('Failed to fetch PlayGround:', data.message);
                   return []; // Return an empty array on failure
               }
           } catch (error) {
-              console.error('Error fetching PGs:', error); // Handle errors
+              console.error('Error fetching PlayGround:', error); // Handle errors
               return []; // Return an empty array on error
           }
       },

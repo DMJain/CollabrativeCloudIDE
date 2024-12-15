@@ -18,9 +18,9 @@ router.post("/create", async (req, res) => {
     try {
         if(!req.user) {return res.status(401).json({success: false, message: "Unauthorized"})}
         const userId = req.user._id;
-        const project = await PlaygroundService.create({user: userId, name: "New Project"});
+        const project = await PlaygroundService.create({user: userId, name: "New Project", image: image});
       const projectDir = `${projectStorageDir}/${userId}/${project._id}`;
-      fs.mkdirSync(projectDir, { recursive: true });
+      // fs.mkdirSync(projectDir, { recursive: true });
   
       // Copy initial setup files to the project directory
       copyDir(initialSetupDir, projectDir);
@@ -49,7 +49,7 @@ router.post("/create", async (req, res) => {
   
       availablePorts++;
       await container.start();
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         data: {
           port: availablePorts - 1,
@@ -94,15 +94,48 @@ router.post("/create", async (req, res) => {
     }
   })
 
-  router.get("/playground/:id", async (req, res) => {
+  router.post("/:id", async (req, res) => {
     const userId = req.user._id;
-    const projectId = req.body.projectId;
+    const projectId = req.params.id;
     try {
       const project = await PlaygroundService.getOne({ id: projectId });
       if (!project) {
         return res.status(404).json({ status: 'error', error: 'Project not found' });
       }
-      return res.status(200).json({ status: 'success', data: project });
+      const projectDir = `${projectStorageDir}/${userId}/${project._id}`;
+  
+      const container = await docker.createContainer({
+        Image: project.image,
+        AttachStdin: true,
+        HostConfig: {
+          PortBindings: {
+            '1000/tcp': [{
+              HostPort: availablePorts.toString()
+            }],
+            '3000/tcp': [{
+              HostPort: '3000'
+            }]
+          },
+          ExposedPorts: {
+            '1000/tcp': {},
+            '3000/tcp': {},
+          },
+          Binds: [ // Mount the project directory as a volume
+            `${projectDir}:/app` 
+          ]
+        }
+      });
+  
+      availablePorts++;
+      await container.start();
+      return res.status(201).json({
+        success: true,
+        data: {
+          port: availablePorts - 1,
+          message: 'Container created successfully',
+          containerId: container.id
+        }
+      });
     } catch (error) {
       console.error('Error getting project:', error);
       res.status(500).send('Internal Server Error');

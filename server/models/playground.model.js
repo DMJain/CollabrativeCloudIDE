@@ -11,6 +11,10 @@ const playgroundSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "user",
     },
+    image: {
+      type: String,
+      required: true,
+    }
   },
   { timestamps: true }
 );

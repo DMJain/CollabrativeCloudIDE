@@ -1,6 +1,6 @@
 import {useNavigate} from 'react-router-dom';
 import {useDispatch} from "react-redux";
-import { useCreatPlayGround, useGetAllPlayGround } from '../../hooks/playGround.hooks';
+import { useCreatPlayGround, useGetAllPlayGround, useGetPlayGround } from '../../hooks/playGround.hooks';
 import { setPlayGrountHost } from '../../store/slices/playgroundSlice';
 import { useLoggedInUser} from '../../hooks/auth.hooks';
 import { useEffect } from 'react';
@@ -9,6 +9,7 @@ const HomePage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const {mutateAsync : createPlayGround} = useCreatPlayGround();
+    const {mutateAsync : getPlayGround} = useGetPlayGround();
     const { data: user, isLoading } = useLoggedInUser();
     const {data : projects} = useGetAllPlayGround();
 
@@ -18,21 +19,27 @@ const HomePage = () => {
         }
     }, [])
 
-    console.log(projects)
-
     const handleClick = async (e) => {
         e.preventDefault();
-
         const {data} = await createPlayGround({image: 'reactbaseapp'});
-        console.log('Data:', data);
+        navigateFunction(data);
+    }
+
+    const handleRun = async ({e, id}) => {
+        e.preventDefault();
+        const {data} = await getPlayGround({id});
+        navigateFunction(data);
+    }
+
+    const navigateFunction = (data) => {
         dispatch(setPlayGrountHost({
-                playGroundHost: `http://localhost:${data.port}/`,
-                playGroundID: data.containerId
-            })
+            playGroundHost: `http://localhost:${data.port}/`,
+            playGroundID: data.containerId
+        })
         );
         setTimeout(() => {
             navigate('/playground');
-          }, 300);
+        }, 300);
     }
 
     return (
@@ -45,7 +52,13 @@ const HomePage = () => {
                     </select>
                     <button className='btn' onClick={handleClick}>Create</button>
                 </div>
-                <div className=']'>
+                <div className=''>
+                    {projects && projects.map((project) => (
+                        <div key={project._id} className='flex justify-between p-2 border-b'>
+                            <div>{project.name}</div>
+                            <button className='btn' onClick={(e) => handleRun({e, id:project._id})}>Run</button>
+                        </div>
+                    ))}
 
                 </div>
             </div>

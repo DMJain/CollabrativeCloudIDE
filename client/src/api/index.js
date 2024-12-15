@@ -7,7 +7,6 @@ export const apiInstance = axios.create({
 
 apiInstance.interceptors.request.use((reqPayload) => {
   const token = localStorage.getItem("token");
-  console.log("Token:", token);
   if (token) {
     reqPayload.headers.Authorization = `Bearer ${token}`;
   }
