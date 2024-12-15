@@ -5,11 +5,11 @@ export const useCreatPlayGround = () => {
     const queryClient = useQueryClient();
   
     const mutation = useMutation({
-      mutationFn: async ({image}) => {
+      mutationFn: async ({image, name}) => {
         const { data } = await apiInstance.post("/playground/create", {
             image,
             "userId" : "1234",
-            "projectId" : "12"
+            "name" : `${name}`
         });
 
         return data;
@@ -26,7 +26,7 @@ export const useCreatPlayGround = () => {
   
     const mutation = useMutation({
       mutationFn: async ({id}) => {
-        const { data } = await apiInstance.post(`/playground/${id}`, {
+        const { data } = await apiInstance.post(`/playground/project/${id}`, {
             projectID : `${id}`
         });
 
@@ -64,6 +64,7 @@ export const useCreatPlayGround = () => {
   
     const mutation = useMutation({
       mutationFn: async ({containerId}) => {
+        console.log(typeof containerId);
         const { data } = await apiInstance.post("/playground/delete", {
             containerId : `${containerId}`
         });

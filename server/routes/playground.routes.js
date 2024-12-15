@@ -14,11 +14,11 @@ const projectStorageDir = path.resolve('../Project'); // Replace with your actua
 const initialSetupDir = path.resolve('../BaseImage/ReactApp');
 
 router.post("/create", async (req, res) => {
-    const { image, projectId} = req.body; // Get userId and projectId from request
+    const { image, name} = req.body; // Get userId and projectId from request
     try {
         if(!req.user) {return res.status(401).json({success: false, message: "Unauthorized"})}
         const userId = req.user._id;
-        const project = await PlaygroundService.create({user: userId, name: "New Project", image: image});
+        const project = await PlaygroundService.create({user: userId, name: name, image: image});
       const projectDir = `${projectStorageDir}/${userId}/${project._id}`;
       // fs.mkdirSync(projectDir, { recursive: true });
   
@@ -86,7 +86,6 @@ router.post("/create", async (req, res) => {
         if(!projects){
             return res.status(404).json({status : 'error', error: 'No Projects'})
         }
-        console.log('projects', projects)
         return res.status(200).json({ status: 'success', data: projects });
     } catch (error) {
       console.error('Error listing containers:', error);
@@ -94,7 +93,7 @@ router.post("/create", async (req, res) => {
     }
   })
 
-  router.post("/:id", async (req, res) => {
+  router.post("/project/:id", async (req, res) => {
     const userId = req.user._id;
     const projectId = req.params.id;
     try {

@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 
 
 import "@xterm/xterm/css/xterm.css";
+import { BsBluetooth } from "react-icons/bs";
 
 const Terminal = ({socket}) => {
 
@@ -16,9 +17,10 @@ const Terminal = ({socket}) => {
     isRendered.current = true;
 
     const term = new XTerminal({
-      rows: 16,
+      rows: 14,
       fontSize: 14, // Adjust font size as needed
-      fontFamily: 'Courier New, monospace', // Set font family
+      fontFamily: 'Courier New, monospace',
+       // Set font family
       theme: {
       }
     });
@@ -42,7 +44,7 @@ const Terminal = ({socket}) => {
     socket.emit('oneTime','data');
   }, []);
 
-  return <div ref={terminalRef} id="terminal"/>;
+  return <div ref={terminalRef} id="terminal" className="xterm "/>;
 };
 Terminal.propTypes = {
   socket: PropTypes.object,

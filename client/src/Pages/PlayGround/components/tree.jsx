@@ -11,7 +11,7 @@ import { fileIcons } from './fileicon';
 
 const FileTree = ({ tree, onFileSelect}) => {
   return (
-    <div className="file-tree">
+    <div className="file-tree text-sm">
       {Object.keys(tree)
         .sort((a, b) => {
           const isAFolder = tree[a] !== null && typeof tree[a] === 'object';
@@ -52,9 +52,9 @@ const TreeNode = ({ name, node, onFileSelect, path }) => {
   };
 
   return (
-    <div className="tree-node">
-      <div onClick={isFolder ? toggleFolder : handleClick} className="tree-item">
-        <span style={{ display: 'flex', alignItems: 'center' }}>
+    <div className="tree-node flex flex-col">
+      <div onClick={isFolder ? toggleFolder : handleClick} className="tree-item p-1 hover:bg-gray-200">
+        <span className='flex items-center hover:cursor-pointer'>
           {isFolder && (isOpen ? <FaChevronDown /> : <FaChevronRight />)}
           <span style={{ marginLeft: isFolder ? 4 : 0 }}>{icon}</span>
           <span style={{ marginLeft: 8 }}>{name}</span>

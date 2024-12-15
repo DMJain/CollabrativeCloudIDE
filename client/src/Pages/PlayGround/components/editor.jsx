@@ -51,7 +51,7 @@ const EditorComponent = ({ selectedFile, socket }) => {
     return (
         <Editor
             language={language}
-            theme="vs-dark"
+            theme="vs-light"
             value={content}
             onChange={handleContentChange}
         />
