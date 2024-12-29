@@ -2,9 +2,7 @@ import { Terminal as XTerminal } from "@xterm/xterm";
 import { useEffect, useRef } from "react";
 import PropTypes from 'prop-types';
 
-
 import "@xterm/xterm/css/xterm.css";
-import { BsBluetooth } from "react-icons/bs";
 
 const Terminal = ({socket}) => {
 

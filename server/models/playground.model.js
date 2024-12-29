@@ -14,6 +14,18 @@ const playgroundSchema = new Schema(
     image: {
       type: String,
       required: true,
+    },
+    hostPort: {
+      type: Number,
+      required: true,
+    },
+    envPort: {
+      type: String,
+      required: true,
+    },
+    inviteCode: {
+      type: String,
+      required: false,
     }
   },
   { timestamps: true }

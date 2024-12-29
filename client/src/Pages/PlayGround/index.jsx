@@ -166,7 +166,7 @@ import Header from "./components/header";
 import { useSelector } from "react-redux";
 import { io } from "socket.io-client";
 import { useDeletePlayGround } from "../../hooks/playGround.hooks";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 const Playground = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -178,7 +178,6 @@ const Playground = () => {
   const [hasInitialized, setHasInitialized] = useState(false); // New state
   const { mutateAsync: deletePlayGround } = useDeletePlayGround();
   const beforeUnloadHandled = useRef(false);
-  const navigate = useNavigate();
   const location = useLocation();
 
   const playGroundIdRef = useRef(null);
