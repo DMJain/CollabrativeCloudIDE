@@ -2,6 +2,7 @@ const Docker = require('dockerode');
 const fs = require('fs');
 const path = require('path');
 const PlaygroundService = require("../services/playground.services");
+const { generateInviteToken } = require('../lib/utils/encrypt');
 
 const docker = new Docker();
 let availablePorts = 9000;
@@ -68,10 +69,13 @@ async function createNewPlayground(req, res) {
   
       const container = await createDockerContainer(image, projectDir);
 
-      await PlaygroundService.updateInviteCode({id:project._id, code: project._id.toString().slice(-8)});
+      const inviteCode = generateInviteToken(project._id.toString());
+
+      await PlaygroundService.updateInviteCode({id:project._id, code: inviteCode});
   
       availablePorts++;
       await container.start();
+      await PlaygroundService.changeRunningStatus({_id: project._id, runningStatus: 'OPEN'});
       return res.status(201).json({
         success: true,
         data: {
@@ -82,12 +86,13 @@ async function createNewPlayground(req, res) {
       });
     } catch (error) {
       console.error('Error creating container:', error);
-      res.status(500).send('Internal Server Error');
+      return res.status(500).send('Internal Server Error');
     }
 }
 
 async function getUserProjectList(req, res) {
-    const userId = req.user._id;
+  if(!req.user) {return res.status(401).json({success: false, message: "Unauthorized"})}
+  const userId = req.user._id;
     try {
       const projects = await PlaygroundService.getAll({ user: userId });
         if(!projects){
@@ -96,7 +101,7 @@ async function getUserProjectList(req, res) {
         return res.status(200).json({ status: 'success', data: projects });
     } catch (error) {
       console.error('Error listing containers:', error);
-      res.status(500).send('Internal Server Error');
+      return res.status(500).send('Internal Server Error');
     }
 }
 
@@ -113,10 +118,9 @@ async function createExistingPlayground(req, res) {
 
       project = await PlaygroundService.updateHostPort({ id: projectId, hostPort: availablePorts });
       
-      console.log(project._id.toString().slice(-8));
-
       availablePorts++;
       await container.start();
+      await PlaygroundService.changeRunningStatus({_id: project._id, runningStatus: 'OPEN'});
       return res.status(201).json({
         success: true,
         data: {
@@ -127,45 +131,88 @@ async function createExistingPlayground(req, res) {
       });
     } catch (error) {
       console.error('Error getting project:', error);
-      res.status(500).send('Internal Server Error');
+      return res.status(500).send('Internal Server Error');
     }
 }
 
 async function deleteRunningPlayGround(req, res) {
-    const { containerId} = req.body;
+    const { containerId, projectId} = req.body;
     console.log("Container ID:", containerId);
     try {
+      if (containerId === 'INVITED') {
+        return;
+      }
       const container = docker.getContainer(containerId);
       await container.stop();
       await container.remove();
+      await PlaygroundService.changeRunningStatus({id: projectId, runningStatus: 'CLOSED'});
       console.log("Container deleted:", containerId);
   
-      res.status(203).json({
+      return res.status(203).json({
           success: true,
           data: { message: "Container deleted" },
       });
   } catch (error) {
       console.error(`Error not deleted deleted:`, error);
-      res.status(500).send("Internal Server Error");
+      return res.status(500).send("Internal Server Error");
   }
 }
 
 async function joinPlaygroundInvite(req, res) {
   const {inviteCode} = req.body;
-  const {playGroundId} = req.params.playgroundid;
   try{
+    let project = await PlaygroundService.getOneByInviteCode({ inviteCode: inviteCode });
+    if (!project) {
+      return res.status(404).json({ status: 'error', error: 'Project not found' });
+    }
+    if (!project.runningStatus === 'CLOSED') {
+      return res.status(404).json({ status: 'error', error: 'Project not running' });
+    }
+    
+    return res.status(200).json({
+      success: true,
+      data: {
+        port: project.hostPort,
+        projectId: project._id,
+        message: 'Container Invite confirm',
+        containerId: 'INVITED'
+       }
+    });
+
+  }catch{
+    console.log("Error in INVITE", err);
+    return res.status(500).send("Internal Server Error");
+  }
+}
+
+async function getInviteCode(req, res) {
+  const {projectId} = req.body;
+  try {
     let project = await PlaygroundService.getOne({ id: projectId });
     if (!project) {
       return res.status(404).json({ status: 'error', error: 'Project not found' });
     }
-    const projectDir = `${projectStorageDir}/${project.user}/${project._id}`;
-
-  }catch{
-
+    const inviteCode = project.inviteCode;
+    return res.status(200).json({
+      success: true,
+      data: {
+        inviteCode: inviteCode,
+        message: 'Invite code generated'
+      }
+    });
+  } catch (error) {
+    console.error('Error generating Invite Code', error);
+    return res.status(500).send('Internal Server Error');
   }
-
 }
 
 
 
-module.exports = {createNewPlayground, getUserProjectList, createExistingPlayground, deleteRunningPlayGround}
+module.exports = {
+  createNewPlayground, 
+  getUserProjectList, 
+  createExistingPlayground, 
+  deleteRunningPlayGround,
+  joinPlaygroundInvite,
+  getInviteCode
+}

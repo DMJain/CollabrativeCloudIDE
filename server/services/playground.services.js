@@ -43,6 +43,17 @@ class PlaygroundService {
         }
     }
 
+    static async getOneByInviteCode(data){
+        const { inviteCode } = data;
+        try{
+            const playground = await Playground.findOne({inviteCode: inviteCode});
+            return playground;
+        }catch(err){
+            console.log("Error getting playground", err);
+            throw new Error("Internal Server Error");
+        }
+    }
+
     static async update(data){
         const { id, name } = data;
         try{
@@ -74,6 +85,17 @@ class PlaygroundService {
         }catch(err) {
             console.log("Error Updating invite code");
             throw new Error("Internal Server Error")
+        }
+    }
+
+    static async changeRunningStatus(data){
+        const { id, runningStatus } = data;
+        try{
+            const playground = await Playground.findOneAndUpdate({_id : id}, {runningStatus}, {new: true});
+            return playground;
+        }catch(err){
+            console.log("Error changing running status", err);
+            throw new Error("Internal Server Error");
         }
     }
   

@@ -2,7 +2,7 @@ const express = require("express");
 
 const router = express.Router();
 
-const {createNewPlayground, getUserProjectList, createExistingPlayground, deleteRunningPlayGround} = require('../controllers/playground.controller')
+const {createNewPlayground, getUserProjectList, createExistingPlayground, deleteRunningPlayGround, joinPlaygroundInvite, getInviteCode} = require('../controllers/playground.controller')
 
 router.post("/create", createNewPlayground);
 
@@ -12,9 +12,8 @@ router.post("/create", createNewPlayground);
   
   router.post("/delete", deleteRunningPlayGround);
 
-  router.post("/invite/accept/:playgroundid", async (req, res) => {
-    
-  })
+  router.post("/invite/create", getInviteCode);
+  router.post("/invite/join", joinPlaygroundInvite);
 
   
 

@@ -63,10 +63,11 @@ export const useCreatPlayGround = () => {
     const queryClient = useQueryClient();
   
     const mutation = useMutation({
-      mutationFn: async ({containerId}) => {
+      mutationFn: async ({containerId, projectId}) => {
         console.log(typeof containerId);
         const { data } = await apiInstance.post("/playground/delete", {
-            containerId : `${containerId}`
+            containerId : `${containerId}`,
+            projectId : `${projectId}`
         });
 
         return data;
@@ -77,3 +78,41 @@ export const useCreatPlayGround = () => {
     });
     return mutation;
   };
+
+export const useGetInviteCode = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async ({id}) => {
+      const { data } = await apiInstance.post("/playground//invite/create", {
+        projectId : `${id}`
+      });
+
+      return data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["playGround"] });
+    },
+  })
+
+  return mutation;
+}
+
+export const useJoinInviteCode = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async ({inviteCode}) => {
+      const { data } = await apiInstance.post("/playground/invite/join", {
+        inviteCode : `${inviteCode}`
+      });
+
+      return data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["playGround"] });
+    },
+  })
+
+  return mutation;
+}

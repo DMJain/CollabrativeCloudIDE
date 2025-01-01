@@ -54,7 +54,7 @@ const SignInPage = () => {
                 <div className="text-center lg:text-left">
                     <h1 className="text-5xl font-bold">Login now!</h1>
                     <p className="py-6">
-                    Tired of the hassle of finding a suitable PG? Our user-friendly platform offers a wide range of verified PG options tailored to your needs. Quickly search, compare, and book your ideal PG in just a few clicks. Login now to explore the best PGs in your city and enjoy a hassle-free accommodation experience
+                    
                     </p>
                 </div>
                 <div className="card bg-base-100 border border-base-200 w-full max-w-sm shrink-0 shadow-2xl">

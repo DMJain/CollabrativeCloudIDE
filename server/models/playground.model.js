@@ -26,6 +26,11 @@ const playgroundSchema = new Schema(
     inviteCode: {
       type: String,
       required: false,
+    },
+    runningStatus:{
+      type: String,
+      default: 'CLOSED',
+      enum: ['OPEN', 'CLOSED']
     }
   },
   { timestamps: true }

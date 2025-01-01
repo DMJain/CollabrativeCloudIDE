@@ -11,7 +11,7 @@ export default {
     extend: {},
   },  
   daisyui: {
-    themes: ['lofi']
+    themes: ['light', 'retro']
   },
   
 }
