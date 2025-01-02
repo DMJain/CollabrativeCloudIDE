@@ -84,7 +84,7 @@ const HomePage = () => {
                     </div>
                 </div>
                 <div className='h-2/3 p-2 flex flex-col gap-2'>
-                    <button className='btn' onClick={handleSwitch}>{showCreateForm ? `Create Playground` : `Join a Friend` }</button>
+                    <button className='btn' onClick={handleSwitch}>{showCreateForm ? `Join a Friend` : `Create Playground` }</button>
                     <button className='btn' onClick={handleLogOut}>Log Out</button>
                 </div>
             </div>

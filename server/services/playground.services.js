@@ -48,7 +48,7 @@ class PlaygroundService {
         try{
             const playground = await Playground.findOne({inviteCode: inviteCode});
             return playground;
-        }catch(err){
+        }catch(err){ 
             console.log("Error getting playground", err);
             throw new Error("Internal Server Error");
         }

@@ -127,6 +127,9 @@ const Playground = () => {
 
   const handleFileSelect = (filePath) => {
     setSelectedFile(filePath);
+    if(socket){
+      socket.emit('file:select', filePath);
+    }
   };
 
   if (isLoading) {

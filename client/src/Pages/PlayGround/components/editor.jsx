@@ -48,6 +48,22 @@ const EditorComponent = ({ selectedFile, socket }) => {
         };
     }, []);
 
+    useEffect(() => {
+        if (!socket) return;
+        
+        const handleFileUpdate = ({ path, content }) => {
+            if (path === selectedFile) {
+                setContent(content);
+            }
+        };
+        
+        socket.on('file:update', handleFileUpdate);
+        
+        return () => {
+            socket.off('file:update', handleFileUpdate);
+        };
+    }, [socket, selectedFile]);
+
     return (
         <Editor
             language={language}
