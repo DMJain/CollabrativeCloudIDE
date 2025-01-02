@@ -177,17 +177,24 @@ const io = new SocketServer(server, {
 });
 
 app.use(cors());
+app.use((req, res, next) => {
+    console.log(`Incoming request: ${req.method} ${req.url}`);
+    next();
+});
+
+io.attach(server);
+
+chokidar.watch(`${initialCwd}`).on('all', (event, path) => {
+    io.to('editor').emit('file:refresh', path)
+});
 
 const activeFiles = new Map(); // Map of file paths to sets of socket IDs
+const activeFileEditors = new Map();
 const userColors = new Map(); // Map of socket IDs to colors
 const availableColors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#33FFF6'];
 
 // Generate a random color for each user
-const getRandomColor = () => availableColors[Math.floor(Math.random() * availableColors.length)];
-
-chokidar.watch(initialCwd).on('all', (event, filePath) => {
-    io.to('editor').emit('file:refresh', filePath);
-});
+const getRandomColor = () => availableColors[Math.floor(Math.random() % availableColors.length)];
 
 io.on('connection', (socket) => {
     console.log(`Socket connected: ${socket.id}`);
@@ -206,10 +213,11 @@ io.on('connection', (socket) => {
     userColors.set(socket.id, userColor);
 
     socket.on('file:select', (filePath) => {
-        if (!activeFiles.has(filePath)) {
-            activeFiles.set(filePath, new Set());
+        activeFiles.set(socket.id, path);
+        if(!activeFileEditors.has(path)){
+            activeFileEditors.set(path, new Set());
         }
-        activeFiles.get(filePath).add(socket.id);
+        activeFileEditors.get(path).add(socket.id);
         console.log(`Socket ${socket.id} selected file: ${filePath}`);
     });
 
@@ -218,8 +226,17 @@ io.on('connection', (socket) => {
         socket.broadcast.to('editor').emit('file:update', { path, content });
     });
 
+    socket.on('terminal:write', (data) => {
+        console.log("recieved",data)
+        ptyProcess.write(data);
+    })
+
+    socket.on('oneTime', (data) => {
+        ptyProcess.write('\r');
+    })
+
     socket.on('cursor:move', ({ path, position }) => {
-        const usersEditingFile = activeFiles.get(path) || new Set();
+        const usersEditingFile = activeFileEditors.get(path) || [];
         usersEditingFile.forEach((id) => {
             if (id !== socket.id) {
                 io.to(id).emit('cursor:update', {
@@ -231,13 +248,18 @@ io.on('connection', (socket) => {
         });
     });
 
+    socket.to('editor').emit('file:refresh')
     socket.on('disconnect', () => {
         console.log(`Socket disconnected: ${socket.id}`);
         userColors.delete(socket.id);
-        activeFiles.forEach((sockets, filePath) => {
-            sockets.delete(socket.id);
-            if (sockets.size === 0) activeFiles.delete(filePath);
-        });
+        const path = activeFiles.get(socket.id);
+        if(activeFileEditors.has(path)){
+            activeFileEditors.get(path).delete(socket.id);
+            if(activeFileEditors.get(path).size === 0){
+                activeFileEditors.delete(path);
+            }
+        }
+        activeFiles.delete(socket.id);
     });
 });
 
@@ -259,23 +281,35 @@ app.get('/files/content', async (req, res) => {
 server.listen(1000, () => console.log('Server running on port 1000'));
 
 async function generateFileTree(directory) {
-    const tree = {};
-
+    const tree = {}
     async function buildTree(currentDir, currentTree) {
         const files = await fs.readdir(currentDir);
+        
         for (const file of files) {
             const filePath = path.join(currentDir, file);
-            const stat = await fs.stat(filePath);
-
-            if (stat.isDirectory()) {
-                currentTree[file] = {};
-                await buildTree(filePath, currentTree[file]);
-            } else {
-                currentTree[file] = null;
+            
+            // Skip the contents of the `node_modules` folder, but include the folder itself as empty
+            if (file === 'node_modules') {
+                currentTree[file] = {}; // Represent node_modules as an empty object
+                continue;
+            }
+    
+            try {
+                const stat = await fs.stat(filePath);
+    
+                if (stat.isDirectory()) {
+                    currentTree[file] = {};
+                    await buildTree(filePath, currentTree[file]);
+                } else {
+                    currentTree[file] = null;
+                }
+            } catch (error) {
+                // Log a warning for files that don't exist or have access issues, then skip them
+                console.warn(`Warning: Could not access file ${filePath} - ${error.message}`);
+                continue;
             }
         }
     }
-
     await buildTree(directory, tree);
-    return tree;
+    return tree
 }

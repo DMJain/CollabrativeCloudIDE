@@ -43,7 +43,7 @@ const EditorComponent = ({ selectedFile, socket }) => {
             const monaco = monacoRef.current;
             console.log('Cursor update:', userId, position);
             if(editor){
-                const decorations = editor.deltaDecorations(
+                editor.deltaDecorations(
                     [],
                     [
                         {
