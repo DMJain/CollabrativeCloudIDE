@@ -149,7 +149,7 @@ const Playground = () => {
         <div className="files w-1/6 border-r-2 overflow-y-auto p-3">
           <FileTree tree={treeData} onFileSelect={handleFileSelect} />
         </div>
-        <div className="editor flex-grow overflow-y-auto">
+        <div className="editor flex-grow overflow-y-auto">̥
           <EditorComponent selectedFile={selectedFile} socket={socket} />
         </div>
       </div>
@@ -159,5 +159,4 @@ const Playground = () => {
     </div>
   );
 };
-
 export default Playground;
