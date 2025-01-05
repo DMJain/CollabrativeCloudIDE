@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import Editor from '@monaco-editor/react';
 import { getFileMode } from '../../../utils/getFileMode';
@@ -11,6 +11,8 @@ const EditorComponent = ({ selectedFile, socket }) => {
     const [language, setLanguage] = useState('');
     const editorRef = useRef(null);
     const monacoRef = useRef(null);
+    const [decorations, setDecorations] = useState([]);
+  const cursorsRef = useRef(new Map());
 
     const autosaveTimer = useRef(null);
 
@@ -20,6 +22,15 @@ const EditorComponent = ({ selectedFile, socket }) => {
             if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
         };
     }, []);
+
+    useEffect(() => {
+        if (!selectedFile) return;
+    
+        // Clear cursor data and decorations on file change
+        // setDecorations([]);
+        // cursorsRef.current.clear();
+    }, [selectedFile]);
+      
 
     useEffect(() => {
         if (!socket) return;
@@ -37,49 +48,55 @@ const EditorComponent = ({ selectedFile, socket }) => {
 
     useEffect(() => {
         if (!socket) return;
-
-        const handleCursorUpdate = ({userId, position}) => {
-            const editor = editorRef.current;
-            const monaco = monacoRef.current;
-            console.log('Cursor update:', userId, position);
-            if(editor){
-                editor.deltaDecorations(
-                    [],
-                    [
-                        {
-                            range: new monaco.Range(
-                                position.lineNumber,
-                                position.column,
-                                position.lineNumber,
-                                position.column + 2,
-                            ),
-                            options: {
-                                inlineClassName: 'cursor-marker',
-                            }
-                        },
-                    ]
-                )
-            }
-        };
-
-        socket.on('cursor:update', handleCursorUpdate);
-
-        return () => {
-            socket.off('cursor:update', handleCursorUpdate);
-        }
         
+        const handleCursorUpdate = ({ userId, position, path }) => {
+          if (path === selectedFile) {
+            console.log('Cursor update received:', { userId, position, path });
+            updateCursor(userId, position);
+          }
+        };
+    
+        socket.on('cursor:update', handleCursorUpdate);
+    
+        return () => {
+          socket.off('cursor:update', handleCursorUpdate);
+        };
+    }, [socket, selectedFile]);
+    
 
-    }, [socket]);
+    const updateCursor = useCallback((userId, position) => {
+        if (!editorRef.current || !position || !monacoRef.current) return;
+    
+        cursorsRef.current.set(userId, position);
+
+    
+        const newDecorations = Array.from(cursorsRef.current.entries()).map(([id, pos]) =>
+          createCursorDecoration(id, pos)
+        );
+        console.log('new Decorations', newDecorations, ' + decorations', decorations)
+        const appliedDecorations = editorRef.current.deltaDecorations(decorations, newDecorations);
+        console.log('Applied Decoration', appliedDecorations)
+        setDecorations(appliedDecorations);
+      }, [decorations]);
+    
+
+      const createCursorDecoration = (userId, position) => ({
+        range: new monacoRef.current.Range(
+          position.lineNumber,
+          position.column,
+          position.lineNumber,
+          position.column
+        ),
+        options: {
+          className: `cursor-${userId} cursor-decoration`,
+          hoverMessage: { value: `Cursor: ${userId}` },
+          beforeContentClassName: `cursor-decoration cursor-${userId}`,
+        },
+      });
+    
 
     useEffect(() => {
         if (!socket) return;
-        
-        const handleFileUpdate = ({ path, content }) => {
-            if (path === selectedFile) {
-                setContent(content);
-            }
-        };
-        
         socket.on('file:update', handleFileUpdate);
         
         return () => {
@@ -87,27 +104,72 @@ const EditorComponent = ({ selectedFile, socket }) => {
         };
     }, [socket, selectedFile]);
 
+    const handleFileUpdate = useCallback(
+        ({ path, content }) => {
+            if (path === selectedFile) {
+                if (!editorRef.current) return;
+    
+                const currentPosition = editorRef.current.getPosition();
+                setContent(content);
+    
+                // // Clear outdated decorations
+                // setDecorations([]);
+                // cursorsRef.current.clear();
+
+                socket.emit('cursor:move', { path: selectedFile, position: currentPosition });
+    
+                // Restore cursor position after content update
+                if (currentPosition) {
+                    setTimeout(() => {
+                        editorRef.current.setPosition(currentPosition);
+                    }, 0);
+                }
+            }
+        },
+        [selectedFile]
+    );
+    
+    
+
     const handleContentChange = (value) => {
         setContent(value);
-
-        // Clear any existing timer to debounce auto-save
+    
         if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
-
-        const editor = editorRef.current;
-        if (editor) {
-            const position = editor.getPosition();
-            socket.emit('cursor:move', { path: selectedFile, position });
-        }
-
-        // Set a new timer for auto-save after 2 seconds
+    
         autosaveTimer.current = setTimeout(() => {
             if (selectedFile && value) {
-                // Emit file:change event with updated content
                 socket.emit('file:change', { path: selectedFile, content: value });
-                console.log(`Auto-saving ${selectedFile}`);
+    
+                const position = editorRef.current?.getPosition();
+                if (position) {
+                    socket.emit('cursor:move', { path: selectedFile, position });
+                    console.log(`Cursor position emitted:`, position);
+                }
             }
-        }, 200); // 2-second delay
+        }, 200); // Debounce timer
     };
+    
+
+    const handleEditorDidMount = (editor, monaco) => {
+        editorRef.current = editor;
+        monacoRef.current = monaco;
+    
+        editor.onDidChangeCursorPosition(
+            (e) => {
+              if (selectedFile && socket) {
+                socket.emit('cursor:move', {
+                  path: selectedFile,
+                  position: {
+                    lineNumber: e.position.lineNumber,
+                    column: e.position.column,
+                  },
+                });
+              }
+            }
+        );
+      };
+
+      console.log('selected File', selectedFile)
 
     return (
         <Editor
@@ -115,25 +177,7 @@ const EditorComponent = ({ selectedFile, socket }) => {
             theme="vs-light"
             value={content}
             onChange={handleContentChange}
-            onMount={(editor, monaco) => {
-                editorRef.current = editor;
-                monacoRef.current = monaco;
-        
-                editor.onDidChangeCursorPosition((e) => {
-                    const position = e.position;
-                    if (socket && selectedFile) {
-                        socket.emit('cursor:move', { path: selectedFile, position });
-                    }
-                });
-                
-                editor.onDidChangeModelContent(() => {
-                    const position = editor.getPosition();
-                    if (socket && selectedFile && position) {
-                        socket.emit('cursor:move', { path: selectedFile, position });
-                    }
-                });
-                
-            }}
+            onMount={handleEditorDidMount}
         />
     );
 };
