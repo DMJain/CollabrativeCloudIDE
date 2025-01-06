@@ -20,7 +20,7 @@ function hash(data, salt, algorithm = 'sha256') {
       return orderId.slice(0,12);
   }
 function generateInviteToken(id){
-  return createHashGenerator('sha256', id);
+  return createHashGenerator('sha256', id).toString().slice(0,8);
 }
   
 

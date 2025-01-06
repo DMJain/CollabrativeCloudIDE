@@ -15,6 +15,9 @@ const playgroundSchema = new Schema(
       type: String,
       required: true,
     },
+    containerIP: {
+      type: String,
+    },
     hostPort: {
       type: Number,
       required: true,

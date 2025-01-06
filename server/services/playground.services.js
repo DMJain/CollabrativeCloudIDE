@@ -98,6 +98,17 @@ class PlaygroundService {
             throw new Error("Internal Server Error");
         }
     }
+
+    static async updateContainerIP(data){
+        const { id, containerIP } = data;
+        try{
+            const playground = await Playground.findOneAndUpdate({_id : id}, {containerIP}, {new: true});
+            return playground;
+        }catch(err){
+            console.log("Error updating container IP", err);
+            throw new Error("Internal Server Error");
+        }
+    }
   
   }
 

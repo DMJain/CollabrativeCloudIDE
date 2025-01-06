@@ -42,7 +42,7 @@ const Terminal = ({socket}) => {
     socket.emit('oneTime','data');
   }, []);
 
-  return <div ref={terminalRef} id="terminal" className="xterm "/>;
+  return <div ref={terminalRef} id="terminal" className="xterm"/>;
 };
 Terminal.propTypes = {
   socket: PropTypes.object,

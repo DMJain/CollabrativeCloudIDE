@@ -11,7 +11,7 @@ import { fileIcons } from './fileicon';
 
 const FileTree = ({ tree, onFileSelect}) => {
   return (
-    <div className="file-tree text-sm">
+    <div className="file-tree text-sm overflow-auto">
       {Object.keys(tree)
         .sort((a, b) => {
           const isAFolder = tree[a] !== null && typeof tree[a] === 'object';
