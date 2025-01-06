@@ -4,6 +4,7 @@ const initialState = {
   playGroundHost: "",
   playGroundContainerId: "",
   playGroundId: "",
+  playGroundContainerIp: "",
 }
 
 export const playGroundSlice = createSlice({
@@ -14,6 +15,7 @@ export const playGroundSlice = createSlice({
       state.playGroundHost = action.payload.playGroundHost;
       state.playGroundContainerId = action.payload.playGroundContainerId;
       state.playGroundId = action.payload.playGroundId;
+      state.playGroundContainerIp = action.payload.playGroundContainerIp;
     },
   },
 })

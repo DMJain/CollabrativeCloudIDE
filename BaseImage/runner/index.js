@@ -40,6 +40,7 @@ chokidar.watch(`${initialCwd}`).on('all', (event, path) => {
 
 const activeFiles = new Map();
 const activeFileEditors = new Map();
+const users = new Map();
 
 io.on('connection', (socket) => {
     console.log(`Socket connected`, socket.id);
@@ -107,6 +108,26 @@ io.on('connection', (socket) => {
             });
         }
     });
+
+    socket.on('preview:run', async () => {
+        ptyProcess.write('npm run dev -- --host \r');
+    })
+
+    socket.on('message:userJoin', (username) => {
+        users.set(socket.id, username);
+        io.emit('message:userSpawn', { id: socket.id, username });
+        io.emit('message:userList', Array.from(users.values()));
+      });
+    
+      socket.on('message:send', (message) => {
+        const username = users.get(socket.id);
+        io.emit('message:recieve', {
+          id: socket.id,
+          username,
+          text: message,
+          timestamp: new Date().toISOString()
+        });
+      });
 
     socket.to('editor').emit('file:refresh');
     socket.on('disconnect', () => {

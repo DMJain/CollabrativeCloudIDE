@@ -1,5 +1,5 @@
 import {useNavigate} from 'react-router-dom';
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import { useCreatPlayGround, useGetAllPlayGround, useGetPlayGround} from '../../hooks/playGround.hooks';
 import { setPlayGrountHost } from '../../store/slices/playgroundSlice';
 import { useLoggedInUser} from '../../hooks/auth.hooks';
@@ -18,12 +18,15 @@ const HomePage = () => {
     const { data: user, isLoading } = useLoggedInUser();
     const {data : projects} = useGetAllPlayGround();
     const [showCreateForm, setShowCreateForm] = useState(true);
+    const userDetail = useSelector((state) => state.user);
 
     useEffect(() => {
         if(!user && isLoading){
             navigate('/sign-in');
         }
     }, [])
+
+    console.log('user', userDetail);
 
     const handleClick = async (e) => {
         e.preventDefault();
@@ -41,7 +44,8 @@ const HomePage = () => {
         dispatch(setPlayGrountHost({
             playGroundHost: `http://localhost:${data.port}/`,
             playGroundContainerId: data.containerId,
-            playGroundId: id
+            playGroundId: id,
+            playGroundContainerIp: data.containerIp,
         })
         );
         console.log('id', id)

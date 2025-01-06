@@ -4,6 +4,7 @@ import Terminal from './components/terminal';
 import FileTree from './components/tree';
 import EditorComponent from './components/editor';
 import Invite from './components/invite';
+import MessageApp from './components/message';
 import { useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
 import { useDeletePlayGround } from '../../hooks/playGround.hooks';
@@ -25,6 +26,7 @@ const Playground = () => {
     const [showPreview, setShowPreview] = useState(true);
     const [showTerminal, setShowTerminal] = useState(true);
     const [showChatPanel, setShowChatPanel] = useState(true);
+    const [previewurl, setPreviewurl] = useState();
 
     const playGroundContainerIdRef = useRef(null);
     const playground = useSelector((state) => state.playground);
@@ -145,6 +147,16 @@ const Playground = () => {
         }
     };
 
+    const handlePreviewRun = () => {
+        if (socket) {
+            console.log('Running preview...', playground.playGroundContainerIp);
+            socket.emit('preview:run');
+            setTimeout(() => {
+                window.open('http://localhost:3000', '_blank');
+            }, 1000);
+        }
+    }
+
     if (isLoading) {
         return <div>Loading Playground...</div>;
     }
@@ -186,7 +198,7 @@ const Playground = () => {
                     </button>
                     <button
                         className="btn btn-xs btn-secondary"
-                        onClick={() => socket?.emit('app:run')}
+                        onClick={handlePreviewRun}
                     >
                         RUN
                     </button>
@@ -239,6 +251,9 @@ const Playground = () => {
                                 >
                                     <div className="bg-red-100 flex items-center justify-center h-full rounded-lg border border-base-300">
                                         Messaging Container
+                                        {socket ? (
+                                            <MessageApp socket={socket}/>
+                                        ) : <p>Initiating Messages</p>}
                                     </div>
                                 </Panel>
                             )}
@@ -269,7 +284,7 @@ const Playground = () => {
                                 <PanelResizeHandle className="w-[5px] cursor-col-resize" />
 
                                 {/* Right Panel (Preview) */}
-                                {showPreview && (
+                                {showPreview && previewurl && (
                                     <Panel
                                         defaultSize={20}
                                         maxSize={40}
@@ -280,7 +295,7 @@ const Playground = () => {
                                                 <iframe
                                                     id="preview-frame"
                                                     className="w-full h-full"
-                                                    src=''
+                                                    src={`${playground.playGroundContainerIp}:3000`}
                                                     title="React App Preview"
                                                 ></iframe>
                                         </div>

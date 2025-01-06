@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLoggedInUser, useSignin } from '../../hooks/auth.hooks';
+import { useDispatch } from 'react-redux';
+import { setUserDetails } from '../../store/slices/userSlice';
 
 const SignInPage = () => {
     const navigate = useNavigate();
     const { data: user, isLoading } = useLoggedInUser();
     const { mutateAsync: signinAsync } = useSignin();
-
+    const dispatch = useDispatch();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -15,7 +17,10 @@ const SignInPage = () => {
     useEffect(() => {
         if (user && !isLoading) {
             if (user.role === 'admin') navigate('/admin');
-            else navigate('/');
+            else{
+                dispatch(setUserDetails({userName: `${user.firstName} ${user.lastName}`}));
+                navigate('/');
+            }
         }
     }, [user, navigate, isLoading]);
 

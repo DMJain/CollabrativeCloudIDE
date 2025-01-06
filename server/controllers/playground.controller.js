@@ -68,14 +68,6 @@ async function createNewPlayground(req, res) {
       copyDir(initialSetupDir, projectDir);
   
       const container = await createDockerContainer(image, projectDir);
-      const containerInfo = await container.inspect();
-      const containerIp = containerInfo.NetworkSettings.Networks.bridge.IPAddress;
-      if (!containerIp) {
-        throw new Error('Container IP not found');
-      }
-
-
-      await PlaygroundService.updateContainerIP({id: project._id, containerIP: containerIp});
       const inviteCode = generateInviteToken(project._id.toString());
 
       await PlaygroundService.updateInviteCode({id:project._id, code: inviteCode});
@@ -83,6 +75,14 @@ async function createNewPlayground(req, res) {
   
       availablePorts++;
       await container.start();
+      const containerInfo = await container.inspect();
+      const containerIp = containerInfo.NetworkSettings.Networks.bridge.IPAddress;
+      if (!containerIp) {
+        throw new Error('Container IP not found');
+      }
+
+
+      // await PlaygroundService.updateContainerIP({id: project._id, containerIP: containerIp});
       await PlaygroundService.changeRunningStatus({_id: project._id, runningStatus: 'OPEN'});
       return res.status(201).json({
         success: true,
@@ -125,17 +125,30 @@ async function createExistingPlayground(req, res) {
   
       const container = await createDockerContainer(project.image, projectDir);
 
+     
+
       project = await PlaygroundService.updateHostPort({ id: projectId, hostPort: availablePorts });
       
       availablePorts++;
       await container.start();
+
+      const containerInfo = await container.inspect();
+      const containerIp = containerInfo.NetworkSettings.Networks.bridge.IPAddress;
+      console.log("Container Info:", containerIp);
+      if (!containerIp) {
+        throw new Error('Container IP not found');
+      }
+
+      await PlaygroundService.updateContainerIP({id: project._id, containerIP: containerIp});
+
       await PlaygroundService.changeRunningStatus({_id: project._id, runningStatus: 'OPEN'});
       return res.status(201).json({
         success: true,
         data: {
           port: availablePorts - 1,
           message: 'Container created successfully',
-          containerId: container.id
+          containerId: container.id,
+          containerIp: containerIp,
         }
       });
     } catch (error) {

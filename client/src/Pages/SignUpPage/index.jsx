@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLoggedInUser, useSignup } from '../../hooks/auth.hooks';
+import { setUserDetails } from '../../store/slices/userSlice';
+import { useDispatch } from 'react-redux';
 
 const SignupPage = () => {
     const navigate = useNavigate();
     const { data: user, isLoading } = useLoggedInUser();
-
+    const dispatch = useDispatch();
     const { mutateAsync: signupAsync } = useSignup();
 
     const [firstname, setFirstname] = useState('');
@@ -19,7 +21,10 @@ const SignupPage = () => {
     useEffect(() => {
         if (user && !isLoading) {
             if(user.role === "admin") navigate('/admin');
-            else navigate('/');
+            else {
+                dispatch(setUserDetails({userName: `${user.firstName} ${user.lastName}`}));
+                navigate('/');
+            }
         }
     }, [user, navigate, isLoading]);
 
