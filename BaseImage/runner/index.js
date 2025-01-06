@@ -140,6 +140,9 @@ io.on('connection', (socket) => {
             }
         }
         activeFiles.delete(socket.id);
+        io.emit('message:userDespawn', { id: socket.id , username: users.get(socket.id)});
+        users.delete(socket.id);
+        io.emit('message:userList', Array.from(users.values()));
     });
 });
 

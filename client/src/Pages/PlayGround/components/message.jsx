@@ -1,75 +1,127 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 
 function MessageApp ({socket}) {
-  const [username, setUsername] = useState('')
+  const user = useSelector((state) => state.user);
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState([])
   const [users, setUsers] = useState([])
   const joinRef = useRef(null)
   const messagesEndRef = useRef(null)
+  const [showMessages, setShowMessages] = useState(true);
+
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
-
-    return () => {
-
+  useEffect(() => {
+    if(!joinRef.current) {
+      socket.emit('message:userJoin', user.userName)
+      joinRef.current = true
     }
   }, [])
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    socket.on('message:userSpawn', ({username}) => {
+      setMessages((prev) => [...prev, { system: true, text: `${username} joined the chat` }])
+    });
+
+    socket.on('message:userList', (userList) => {
+      setUsers(userList);
+    })
+
+    socket.on('message:recieve', (msg) => {
+      setMessages((prev) => [...prev, msg])
+    })
+
+    socket.on('message:userDespawn', ({username}) => {
+      setMessages((prev) => [...prev, { system: true, text: `${username} left the chat` }])
+    })
+
+    return () => {
+      socket.off('message:userSpawn');
+      socket.off('message:userList');
+      socket.off('message:recieve');
+    }
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if(message) {
+      socket.emit('message:send', message)
+      setMessage('')
+    }
+  }
+
+  console.log('messages socket', socket.id)
+  console.log('messages', messages) 
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <div className="max-w-6xl mx-auto grid grid-cols-[1fr_250px] gap-4">
-        <div className="p-4">
-          <div className="h-[calc(100vh-8rem)] flex flex-col">
-            <div className="flex-1 pr-4">
-              {messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`mb-4 ${msg.system ? 'text-center text-gray-500 text-sm' : ''}`}
-                >
-                  {!msg.system && (
-                    <div className={`flex items-start gap-2 ${msg.id === socket.id ? 'flex-row-reverse' : ''}`}>
-                      <div className={`max-w-[70%] ${msg.id === socket.id ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded-lg p-3`}>
-                        <div className="font-medium text-sm mb-1">{msg.username}</div>
-                        <div>{msg.text}</div>
+    <div className="w-full h-full">
+      <div className='flex flex-col gap-1 h-full'>
+        <div className='border-b flex justify-between p-1'>
+          <div></div>
+          <div>Chats</div>
+          <div>
+            <button className='btn btn-xs btn-primary shadow-sm shadow-base-300' onClick={() => setShowMessages(!showMessages)}>{showMessages ? `Users : ${users.length}` : 'Show Chats'}</button>
+          </div>
+        </div>
+        {showMessages ? (
+          <div className="showmessageContainer flex-grow overflow-auto"> 
+            {messages.map((msg, index) => (
+              <div
+                    key={index}
+                    className={`${msg.system ? 'text-center text-gray-500 text-sm' : ''}`}
+              >
+                {msg.system ? 
+                  (<div>{msg.text}</div>) 
+                  : 
+                  (<div>
+                    <div className={`chat ${msg.id == socket.id ? 'chat-end chat-accent' : 'chat-start'}`}>
+                      <div className="chat-header text-xs opacity-50">
+                        {msg.username}
                       </div>
+                      <div className={`chat-bubble ${msg.id == socket.id ? 'chat-bubble-accent' : 'chat-bubble-primary'}`}>{msg.text}</div>
                     </div>
-                  )}
-                  {msg.system && <div>{msg.text}</div>}
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
+                  </div>)}
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>) : (
+          <div className='flex flex-col gap-2'>
+            <div className='text-lg text-center'> Joined Users {users.length}</div>
+            <div className='flex flex-col gap-1 overflow-auto items-center justify-center'> 
+            {users.map((user, index) => (
+              <div key={index} className="p-1 border border-base-200 rounded-sm">
+                <span>{user}</span>
+              </div>
+            ))}
             </div>
-            <form onSubmit={handleSubmit} className="mt-4 flex gap-2">
+
+          </div>)}
+        
+          {showMessages && <div className='sentMessageContainer border-t p-2'>
+            <form onSubmit={handleSubmit} className="flex justify-between gap-2">
               <input
-                type="text"
-                placeholder="Type a message..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-              />
+              type="text"
+              className='flex-grow input input-bordered w-full input-sm'
+              placeholder="Type a message..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)} />
               <button type="submit">
                 Send
               </button>
             </form>
-          </div>
-        </div>
-        <div className="p-4">
-          <h3 className="font-medium mb-4">Online Users ({users.length})</h3>
-          <div className="h-[calc(100vh-10rem)]">
-            {users.map((user, index) => (
-              <div key={index} className="flex items-center gap-2 mb-2">
-                <span>{user}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+          </div>}
       </div>
-    </div>
+    </div>      
   )
 }
 

@@ -155,7 +155,7 @@ const Playground = () => {
                 window.open('http://localhost:3000', '_blank');
             }, 1000);
         }
-    }
+    };
 
     if (isLoading) {
         return <div>Loading Playground...</div>;
@@ -171,25 +171,31 @@ const Playground = () => {
                 <p>IDE</p>
                 <div className="flex gap-2">
                     <button
-                        className="btn btn-xs btn-secondary"
+                        className="btn btn-xs btn-neutral"
                         onClick={() => setShowSidePanel(!showSidePanel)}
                     >
                         {showSidePanel ? 'Hide SideBar' : 'Show SideBar'}
                     </button>
                     <button
-                        className="btn btn-xs btn-secondary"
+                        className="btn btn-xs btn-neutral"
                         onClick={() => setShowPreview(!showPreview)}
                     >
                         {showPreview ? 'Hide Preview' : 'Show Preview'}
                     </button>
                     <button
-                        className="btn btn-xs btn-secondary"
+                        className="btn btn-xs btn-neutral"
                         onClick={() => setShowTerminal(!showTerminal)}
                     >
                         {showTerminal ? 'Hide Terminal' : 'Show Terminal'}
                     </button>
                     <button
-                        className="btn btn-xs btn-secondary"
+                        className="btn btn-xs btn-primary"
+                        onClick={() => setShowChatPanel(!showChatPanel)}
+                    >
+                        {showChatPanel ? 'Hide Messages' : 'Show Messages'}
+                    </button>
+                    <button
+                        className="btn btn-xs btn-info"
                         onClick={() =>
                             document.getElementById('inviteModal').showModal()
                         }
@@ -197,7 +203,7 @@ const Playground = () => {
                         Invite
                     </button>
                     <button
-                        className="btn btn-xs btn-secondary"
+                        className="btn btn-xs btn-success"
                         onClick={handlePreviewRun}
                     >
                         RUN
@@ -232,28 +238,18 @@ const Playground = () => {
                                 </div>
                             </Panel>
                             <PanelResizeHandle className="h-[5px] cursor-row-resize" />
-                            <div className="flex justify-between p-1 rounded-lg border border-base-300">
-                                <p>Messages</p>
-                                <button
-                                    className="btn btn-xs btn-primary"
-                                    onClick={() =>
-                                        setShowChatPanel(!showChatPanel)
-                                    }
-                                >
-                                    {showChatPanel ? 'Minimize' : 'Expand'}
-                                </button>
-                            </div>
                             {showChatPanel && (
                                 <Panel
-                                    defaultSize={20}
-                                    maxSize={40}
-                                    minSize={10}
+                                    defaultSize={30}
+                                    maxSize={45}
+                                    minSize={20}
                                 >
-                                    <div className="bg-red-100 flex items-center justify-center h-full rounded-lg border border-base-300">
-                                        Messaging Container
+                                    <div className="h-full rounded-lg border border-base-300">
                                         {socket ? (
-                                            <MessageApp socket={socket}/>
-                                        ) : <p>Initiating Messages</p>}
+                                            <MessageApp socket={socket} />
+                                        ) : (
+                                            <div>Initializing Messages</div>
+                                        )}
                                     </div>
                                 </Panel>
                             )}
@@ -291,13 +287,12 @@ const Playground = () => {
                                         minSize={10}
                                     >
                                         <div className="bg-blue-200 flex flex-col h-full rounded-lg border border-base-300">
-                                            
-                                                <iframe
-                                                    id="preview-frame"
-                                                    className="w-full h-full"
-                                                    src={`${playground.playGroundContainerIp}:3000`}
-                                                    title="React App Preview"
-                                                ></iframe>
+                                            <iframe
+                                                id="preview-frame"
+                                                className="w-full h-full"
+                                                src={`${playground.playGroundContainerIp}:3000`}
+                                                title="React App Preview"
+                                            ></iframe>
                                         </div>
                                     </Panel>
                                 )}
