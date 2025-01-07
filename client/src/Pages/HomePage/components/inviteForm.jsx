@@ -34,13 +34,13 @@ const InviteForm = () => {
     }
 
     return (
-        <div className='flex justify-between flex-col gap-2 border p-2 w-full'>
+        <div className='flex justify-between flex-col gap-2 border border-accent rounded-lg p-2 w-full'>
             <span className='text-center text-lg'>Join Project</span>
             <label>
                 <span className='text-sm'>Invite Code</span>
                 <input type='text' placeholder='Type Invite Code' className='input input-bordered w-full' value={inviteCode} onChange={handleInviteChange} />
             </label>
-            <button className='btn' onClick={handleJoinPlayground}>Join</button>
+            <button className='btn btn-accent' onClick={handleJoinPlayground}>Join</button>
         </div>
     );
 }

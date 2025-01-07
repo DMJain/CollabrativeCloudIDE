@@ -6,12 +6,8 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   plugins: [daisyui,],
-  theme: {
-    daisyui: ['light'],
-    extend: {},
-  },  
   daisyui: {
-    themes: ['light', 'retro']
+    themes: ['cmyk']
   },
   
 }

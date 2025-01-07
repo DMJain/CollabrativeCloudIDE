@@ -158,7 +158,7 @@ const Playground = () => {
     };
 
     if (isLoading) {
-        return <div>Loading Playground...</div>;
+        return <div className='flex items-center justify-center h-screen'><div className='h-screen flex flex-col justify-center items-center'><span className="loading loading-dots loading-lg"></span><div>Loading...</div></div></div>;
     }
 
     if (error) {
