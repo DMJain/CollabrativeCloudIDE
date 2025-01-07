@@ -77,12 +77,12 @@ async function createNewPlayground(req, res) {
       await container.start();
       const containerInfo = await container.inspect();
       const containerIp = containerInfo.NetworkSettings.Networks.bridge.IPAddress;
+      console.log("Container Info:", containerIp);
       if (!containerIp) {
         throw new Error('Container IP not found');
       }
 
-
-      // await PlaygroundService.updateContainerIP({id: project._id, containerIP: containerIp});
+      await PlaygroundService.updateContainerIP({id: project._id, containerIP: containerIp});
       await PlaygroundService.changeRunningStatus({_id: project._id, runningStatus: 'OPEN'});
       return res.status(201).json({
         success: true,
